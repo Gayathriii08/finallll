@@ -1,0 +1,115 @@
+<div class="waste-recycle-wrapper">
+  <header class="nav-bar">
+  <div class="company-logo">
+    <img src="assets/logo-img.png" alt="WasteZero Logo" class="logo-img" />
+    <span>WasteZero</span>
+  </div>
+
+  <!-- ✅ Hamburger Menu Icon -->
+  <div class="menu-toggle" (click)="isMenuOpen = !isMenuOpen">
+    ☰
+  </div>
+
+  <!-- ✅ Navigation Links -->
+  <nav class="nav-links" [class.active]="isMenuOpen">
+  <a href="#" (click)="scrollToSection('top')">HOME</a>
+  <a href="#" (click)="scrollToSection('footer-about')">ABOUT</a>
+  <a href="#" (click)="scrollToSection('footer-services')">SERVICES</a>
+  <a href="#" (click)="scrollToSection('footer-contact')">CONTACT</a>
+  <button class="signup" (click)="openLoginModal(); isMenuOpen = false">SIGN IN</button>
+  <button class="signup" (click)="openRegisterModal(); isMenuOpen = false">SIGN UP</button>
+</nav>
+
+</header>
+
+
+  <main class="main-section">
+    <section class="left-section">
+      <h1><span class="waste">WASTE</span> <br><span class="recycle">ZERO</span></h1>
+      <p>
+        WasteZero connects volunteers, NGOs and administration to schedule pickups, 
+        manage recycling and make a positive impact on our environment.
+      </p>
+      <button class="cta-btn" (click)="openLoginModal()">Get Started</button>
+    </section>
+    <section class="right-section">
+      <img src="assets/dummy.jpg" alt="Recycling bins illustration" class="recycle-img" />
+    </section>
+  </main>
+  <section class="services-section">
+      <div class="services-container">
+        <h2 class="services-title">Wherever you are, go zero waste</h2>
+        <div class="services-grid">
+          <div class="service-card">
+            <img src="assets/home.jpg" alt="At Home" class="service-image" />
+            <h3>At Home</h3>
+            <p>Explore easy, concrete ways to reduce waste in your home and daily life</p>
+          </div>
+          <div class="service-card">
+            <img src="assets/work.jpg" alt="At Work" class="service-image" />
+            <h3>At Work</h3>
+            <p>Get your business or organization on the road to zero waste with resources or consulting</p>
+          </div>
+          <div class="service-card">
+            <img src="assets/school.jpg" alt="At School" class="service-image" />
+            <h3>At School</h3>
+            <p>From kindergarten to college, schools are the perfect place to start zero waste thinking</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  <footer class="page-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Services</a></li>
+        </ul>
+      </div>
+      <div class="footer-col" id="footer-about">
+        <h4>About Us</h4>
+        <p>
+          WasteZero is a smart waste management platform that connects volunteers, NGOs, and local administration to streamline waste collection and promote sustainable recycling practices. Together, we're building cleaner communities through intelligent pickup scheduling and comprehensive waste management solutions.
+        </p>
+      </div>
+      <div class="footer-col" id="footer-services">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#">Smart Pickup Scheduling</a></li>
+          <li><a href="#">Community Recycling</a></li>
+          <li><a href="#">Volunteer Coordination</a></li>
+          <li><a href="#">Waste Analytics</a></li>
+          <li><a href="#">NGO Partnerships</a></li>
+        </ul>
+      </div>
+      <div class="footer-col" id="footer-contact">
+        <h4>Contact Us</h4>
+        <p>123 AI Street, Tech City, 12345</p>
+        <div class="footer-social">
+          <a href="#" title="Facebook"><span class="footer-icon">📘</span></a>
+          <a href="#" title="Twitter"><span class="footer-icon">🐦</span></a>
+          <a href="#" title="Instagram"><span class="footer-icon">📸</span></a>
+          <a href="#" title="LinkedIn"><span class="footer-icon">💼</span></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Login Modal Overlay -->
+  <!-- Login/Register Modal Overlay -->
+  <div class="modal-overlay" *ngIf="showLogin || showRegister" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="closeModal()">x</button>
+
+      <!-- Show Login -->
+      <app-login *ngIf="showLogin" (openRegister)="openRegisterModal()"></app-login>
+
+      <!-- Show Register -->
+      <app-register *ngIf="showRegister" (openLogin)="openLoginModal()"></app-register>
+    </div>
+  </div>
+
+</div>

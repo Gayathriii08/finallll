@@ -1,0 +1,46 @@
+<div class="edit-post-container" *ngIf="!isLoading; else loadingTemplate">
+  <h2>Edit Post</h2>
+
+  <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="title">Title <span>*</span></label>
+      <input id="title" type="text" formControlName="title" placeholder="Enter post title" />
+      <small class="error" *ngIf="postForm.get('title')?.touched && postForm.get('title')?.invalid">
+        Title is required.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" rows="4" formControlName="description" placeholder="Enter description"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="location">Location</label>
+      <input id="location" type="text" formControlName="location" placeholder="Enter location" />
+    </div>
+
+    <div class="form-group">
+      <label for="status">Status</label>
+      <select id="status" formControlName="status">
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <div class="buttons">
+      <button type="submit" [disabled]="isSaving || postForm.invalid">Save Changes</button>
+      <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancel</button>
+    </div>
+
+    <div class="message" *ngIf="message">
+      {{ message }}
+    </div>
+  </form>
+</div>
+
+<ng-template #loadingTemplate>
+  <div class="loading">
+    <p>Loading post details...</p>
+  </div>
+</ng-template>

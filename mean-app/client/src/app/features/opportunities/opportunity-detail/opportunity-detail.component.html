@@ -1,0 +1,50 @@
+<div class="opportunity-detail-layout" *ngIf="!loading; else loadingTpl">
+  <div *ngIf="opportunity; else notFound">
+    <div class="opportunity-detail-main">
+      <a class="back-link" (click)="goBack()">&larr; Back to Opportunities</a>
+      <h1>{{ opportunity.title }}</h1>
+      <span class="subtitle">Volunteer opportunity details</span>
+
+      <section class="description-section">
+        <h2>Description</h2>
+        <p>{{ opportunity.description }}</p>
+      </section>
+
+      <section class="skills-section">
+        <h2>Required Skills</h2>
+        <ul>
+          <li *ngFor="let skill of opportunity.required_skills">{{ skill }}</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="opportunity-detail-sidebox">
+      <div class="detail-card">
+        <h2>Opportunity Details</h2>
+        <p><strong>Date:</strong> {{ opportunity.date }}</p>
+        <p><strong>Duration:</strong> {{ opportunity.duration }}</p>
+        <p><strong>Location:</strong> {{ opportunity.location }}</p>
+        <p><strong>Posted By:</strong> NGO ID: {{ opportunity.ngo_id }}</p>
+        <span class="opp-status" [class.closed]="opportunity.status === 'Closed'">{{ opportunity.status }}</span>
+        
+      </div>
+    </div>
+  </div>
+
+  <ng-template #notFound>
+    <p>Opportunity not found.</p>
+    <button (click)="goBack()">Back</button>
+  </ng-template>
+</div>
+
+<ng-template #loadingTpl>
+  <p>Loading opportunity...</p>
+</ng-template>
+
+<app-confirm-modal
+  [title]="'Delete Opportunity'"
+  [message]="'Are you sure you want to delete this opportunity?'"
+  [(visible)]="showConfirmModal"
+  (onConfirm)="confirmDelete()"
+  (onCancel)="cancelDelete()"
+></app-confirm-modal>

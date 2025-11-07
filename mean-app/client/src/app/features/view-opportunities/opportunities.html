@@ -1,0 +1,22 @@
+<div class="opportunities-container">
+  <h2>Volunteer Opportunities</h2>
+  <p class="subtitle">Browse and join recycling and waste management initiatives</p>
+
+  <div class="opportunity-actions">
+    <input type="text" [(ngModel)]="searchText" placeholder="Search opportunities...">
+  </div>
+
+  <div *ngIf="filteredOpportunities.length > 0; else noData">
+    <div *ngFor="let op of filteredOpportunities" class="opportunity-card">
+      <h3>{{ op.title }}</h3>
+      <p>{{ op.description || 'No description available' }}</p>
+    </div>
+  </div>
+
+  <ng-template #noData>
+    <p class="no-opportunities">
+      No opportunities found matching your criteria.<br>
+      Check back later for new opportunities.
+    </p>
+  </ng-template>
+</div>

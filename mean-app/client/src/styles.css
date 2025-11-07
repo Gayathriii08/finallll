@@ -1,0 +1,46 @@
+/* Dark mode for dashboard wrapper and main content */
+body.dark .dashboard-wrapper {
+  background-color: #121212;
+  color: #f0f0f0;
+}
+
+body.dark {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+body.dark .main-content {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+/* Input fields and buttons remain readable */
+body.dark input,
+body.dark select,
+body.dark button {
+  background-color: #fff;
+  color: #000;
+}
+
+body.dark h2 {
+  color: #100202; /* makes labels light for dark background */
+}
+/* Labels in forms */
+body.dark label {
+  color: #100202; /* makes labels light for dark background */
+}
+
+/* Footer in dark mode */
+body.dark .page-footer {
+  background-color: #1e1e1e;
+  color: white;
+}
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+

@@ -1,0 +1,888 @@
+<header class="nav-bar" [ngClass]="{'dark': isDarkMode}">
+  <div class="company-logo">
+    <img src="assets/logo-img.png" alt="WasteZero Logo" class="logo-img" />
+    <span>WasteZero</span>
+  </div>
+  <nav class="nav-links">
+    <a href="#">HOME</a>
+  </nav>
+</header>
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <div class="profile">
+      <img src="https://i.ibb.co/PGv8ZzG/user.png" alt="User Profile" />
+      <h3>{{userProfile.name || 'User'}}</h3>
+      <p class="user-role">
+        <span *ngIf="userProfile.role === 'admin'">Administrator</span>
+        <span *ngIf="userProfile.role === 'volunteer'">Volunteer</span>
+        <span *ngIf="userProfile.role === 'user'">User</span>
+      </p>
+    </div>
+
+    <nav class="menu">
+      <h4>Main Menu</h4>
+      <ul>
+        <li [class.active]="activeMenu === 'dashboard'" (click)="setActive('dashboard')">Dashboard</li>
+        <li *ngIf="canSchedulePickup()" [class.active]="activeMenu === 'schedule'" (click)="setActive('schedule')">Schedule Pickup</li>
+        <li [class.active]="activeMenu === 'opportunities'" (click)="setActive('opportunities')">Opportunities</li>
+        <li [class.active]="activeMenu === 'messages'" (click)="setActive('messages')">Messages</li>
+        <li [class.active]="activeMenu === 'impact'" (click)="setActive('impact')">My Impact</li>
+      </ul>
+
+      <h4>Settings</h4>
+      <ul>
+        <li [class.active]="activeMenu === 'profile'" (click)="setActive('profile')">My Profile</li>
+        <li [class.active]="activeMenu === 'settings'" (click)="setActive('settings')">Settings</li>
+        <li [class.active]="activeMenu === 'support'" (click)="setActive('support')">Help & Support</li>
+        <li *ngIf="isAdmin()" [class.active]="activeMenu === 'admin'" (click)="setActive('admin')">Admin Panel</li>
+        <li class="theme-toggle-item" (click)="toggleTheme()">
+          <span>{{isDarkMode ? '🌙' : '☀️'}}</span> {{isDarkMode ? 'Dark Mode' : 'Light Mode'}}
+        </li>
+        <li class="logout-item" (click)="logout()">
+          <span>🚪</span> Logout
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    
+    <!-- Error and Success Messages -->
+    <div *ngIf="errorMessage" class="error-message" (click)="clearMessages()">
+      <span>⚠️ {{errorMessage}}</span>
+      <button class="close-btn">×</button>
+    </div>
+    <div *ngIf="successMessage" class="success-message" (click)="clearMessages()">
+      <span>✅ {{successMessage}}</span>
+      <button class="close-btn">×</button>
+    </div>
+
+    <!-- Dashboard Section -->
+    <section *ngIf="activeMenu === 'dashboard'" class="dashboard-section">
+      <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back, {{userProfile.name || 'User'}}! Here's your waste management overview.</p>
+      </div>
+
+      <!-- Key Metrics Cards -->
+      <div class="metrics-grid" *ngIf="!isLoading">
+        <div class="metric-card">
+          <div class="metric-icon">🚛</div>
+          <div class="metric-content">
+            <h3>{{dashboardData.totalPickups}}</h3>
+            <p>Total Pickups</p>
+            <span class="change" [class]="getChangeColor(dashboardData.pickupsChangePercent)">
+              {{formatChangePercent(dashboardData.pickupsChangePercent)}} from last month
+            </span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon">♻️</div>
+          <div class="metric-content">
+            <h3>{{dashboardData.totalRecycledItems}}</h3>
+            <p>Recycled Items</p>
+            <span class="change" [class]="getChangeColor(dashboardData.recycledItemsChangePercent)">
+              {{formatChangePercent(dashboardData.recycledItemsChangePercent)}} from last month
+            </span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon">🌱</div>
+          <div class="metric-content">
+            <h3>{{dashboardData.totalCO2SavedKg}}</h3>
+            <p>CO2 Saved (kg)</p>
+            <span class="change" [class]="getChangeColor(dashboardData.co2SavedChangePercent)">
+              {{formatChangePercent(dashboardData.co2SavedChangePercent)}} from last month
+            </span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon">❤️</div>
+          <div class="metric-content">
+            <h3>{{dashboardData.totalVolunteerHours}}</h3>
+            <p>Volunteer Hours</p>
+            <span class="change" [class]="getChangeColor(dashboardData.volunteerHoursChangePercent)">
+              {{formatChangePercent(dashboardData.volunteerHoursChangePercent)}} from last month
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Pickups and Recycling Breakdown -->
+      <div class="dashboard-content">
+        <div class="upcoming-pickups">
+          <div class="section-header">
+            <h2>Upcoming Pickups</h2>
+            <a href="#" class="view-all">View All</a>
+          </div>
+          <div class="pickups-table">
+            <table *ngIf="dashboardData.upcomingPickups.length > 0">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Address</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pickup of dashboardData.upcomingPickups">
+                  <td>{{formatDate(pickup.pickupDate)}} {{pickup.time}}</td>
+                  <td>{{pickup.address}}</td>
+                  <td><span class="status scheduled">Scheduled</span></td>
+                  <td>
+                    <button class="btn-small" (click)="setActive('schedule')">Manage</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="dashboardData.upcomingPickups.length === 0" class="empty-state">
+              <p>No upcoming pickups scheduled.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="recycling-breakdown">
+          <div class="section-header">
+            <h2>Recycling Breakdown</h2>
+            <p>This Month</p>
+          </div>
+          <div class="breakdown-list">
+            <div class="breakdown-item" *ngFor="let material of ['Plastic', 'Paper', 'Glass', 'E-Waste', 'Organic']">
+              <div class="material-info">
+                <span class="material-name">{{material}}</span>
+                <span class="material-percentage">{{getRecyclingPercentage(material).toFixed(0)}}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getRecyclingPercentage(material)" 
+                     [class]="'progress-' + material.toLowerCase().replace('-', '')"></div>
+              </div>
+            </div>
+          </div>
+          <div class="total-collected">
+            <p>Total Collected: <strong>{{getTotalRecycledWeight().toFixed(1)}} kg</strong></p>
+            <span class="change green">↑10.2%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading dashboard data...</p>
+      </div>
+    </section>
+
+    <!-- Messages Section -->
+    <section *ngIf="activeMenu === 'messages'" class="messages-section">
+      <div class="messages-header">
+        <h1>Messages</h1>
+        <p>Chat with volunteers, NGOs, and waste management partners.</p>
+      </div>
+
+      <div class="messages-container">
+        <!-- Conversations List -->
+        <div class="conversations-panel">
+          <div class="conversations-header">
+            <h3>Conversations</h3>
+            <button class="btn-new-conversation" (click)="startNewConversation()">
+              <span>💬</span> New Chat
+            </button>
+          </div>
+          
+          <div class="search-conversations">
+            <input type="text" placeholder="Search messages..." [(ngModel)]="messageSearchTerm" (input)="searchMessages()">
+          </div>
+          <div class="conversations-list">
+            <div *ngFor="let conversation of conversations" 
+                 class="conversation-item" 
+                 [class.active]="selectedConversation?._id === conversation._id"
+                 (click)="selectConversation(conversation)">
+              <div class="conversation-avatar">
+                <span>{{getOtherUserId(conversation).charAt(0).toUpperCase()}}</span>
+              </div>
+              <div class="conversation-content">
+                <div class="conversation-name">User {{getOtherUserId(conversation).slice(-1)}}</div>
+                <div class="conversation-preview">{{conversation.content}}</div>
+                <div class="conversation-time">{{formatMessageTime(conversation.timestamp)}}</div>
+              </div>
+              <div class="conversation-status" *ngIf="!conversation.isRead">
+                <span class="unread-dot"></span>
+              </div>
+            </div>
+            <div *ngIf="conversations.length === 0" class="empty-conversations">
+              <p>No conversations yet</p>
+              <button class="btn-primary" (click)="startNewConversation()">Start a conversation</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Window -->
+        <div class="chat-panel">
+          <div *ngIf="selectedConversation" class="chat-header">
+            <div class="chat-user-info">
+              <span class="user-avatar">{{getOtherUserId(selectedConversation).charAt(0).toUpperCase()}}</span>
+              <span class="user-name">User {{getOtherUserId(selectedConversation).slice(-1)}}</span>
+            </div>
+          </div>
+
+          <div class="chat-messages" *ngIf="selectedConversation">
+            <div *ngFor="let message of messages" 
+                 class="message" 
+                 [class.sent]="isMessageFromCurrentUser(message)"
+                 [class.received]="!isMessageFromCurrentUser(message)">
+              <div class="message-content">
+                <p>{{message.content}}</p>
+                <span class="message-time">{{formatMessageTime(message.timestamp)}}</span>
+              </div>
+            </div>
+            <div *ngIf="messages.length === 0" class="no-messages">
+              <p>No messages in this conversation</p>
+            </div>
+          </div>
+
+          <div *ngIf="selectedConversation" class="chat-input">
+            <input type="text" 
+                   placeholder="Type your message..." 
+                   [(ngModel)]="newMessage"
+                   (keyup.enter)="sendMessage()">
+            <button (click)="sendMessage()" [disabled]="!newMessage.trim()">
+              <span>📤</span>
+            </button>
+          </div>
+
+          <div *ngIf="!selectedConversation" class="no-conversation-selected">
+            <div class="empty-chat">
+              <span class="chat-icon">💬</span>
+              <h3>Select a conversation</h3>
+              <p>Choose a conversation from the list to start chatting</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Conversation Form -->
+        <div *ngIf="showNewConversationForm" class="new-conversation-form">
+          <div class="form-header">
+            <h3>Start New Conversation</h3>
+            <button class="close-btn" (click)="cancelNewConversation()">×</button>
+          </div>
+          
+          <div class="form-content">
+            <div class="form-group">
+              <label for="userSearch">Select user to message:</label>
+              <input 
+                type="text" 
+                id="userSearch"
+                placeholder="Search by name or email..."
+                [(ngModel)]="searchUserTerm">
+              
+              <!-- User Dropdown -->
+              <div class="user-dropdown" *ngIf="searchUserTerm">
+                <div 
+                  *ngFor="let user of getFilteredUsers()" 
+                  class="user-option"
+                  (click)="selectUserForConversation(user)">
+                  <div class="user-option-avatar">{{user.name.charAt(0).toUpperCase()}}</div>
+                  <div class="user-option-info">
+                    <div class="user-option-name">{{user.name}}</div>
+                    <div class="user-option-email">{{user.email}}</div>
+                  </div>
+                </div>
+                <div *ngIf="getFilteredUsers().length === 0" class="user-option no-results">
+                  No users found
+                </div>
+              </div>
+              
+              <!-- Selected User Display -->
+              <div *ngIf="newConversationUserId" class="selected-user">
+                <span>✓ Selected: {{searchUserTerm}}</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="firstMessage">First message:</label>
+              <textarea 
+                id="firstMessage"
+                placeholder="Type your first message..."
+                [(ngModel)]="newConversationMessage"
+                rows="3"></textarea>
+            </div>
+            
+            <div class="form-actions">
+              <button class="btn-secondary" (click)="cancelNewConversation()">Cancel</button>
+              <button class="btn-primary" (click)="sendFirstMessage()" [disabled]="!newConversationUserId.trim() || !newConversationMessage.trim()">
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule Pickup Section -->
+    <section *ngIf="activeMenu === 'schedule'" class="schedule-section">
+      <div class="schedule-header">
+        <h1>Schedule Pickup</h1>
+        <p>Request waste collection and manage your pickups</p>
+      </div>
+
+       <div class="schedule-tabs">
+       <!-- <button [class.active]="activePickupTab === 'schedule'" (click)="setPickupTab('schedule')">
+          Schedule New Pickup
+        </button> -->
+        <button [class.active]="activePickupTab === 'history'" (click)="setPickupTab('history')">
+          Pickup History
+        </button>
+      </div>
+
+      <!-- Schedule New Pickup Tab -->
+      <!-- <div *ngIf="activePickupTab === 'schedule'" class="schedule-form">
+        <div class="form-section">
+          <h2>Request Waste Collection</h2>
+          <p>Fill in the details to schedule a pickup for your recyclable waste</p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" [(ngModel)]="pickupRequest.name" placeholder="Enter your full name">
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <input type="text" [(ngModel)]="pickupRequest.address" placeholder="Enter your street address">
+            </div>
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" [(ngModel)]="pickupRequest.city" placeholder="Enter your city">
+            </div>
+            <div class="form-group">
+              <label>Contact Number</label>
+              <input type="tel" [(ngModel)]="pickupRequest.contactNumber" placeholder="Enter your phone number">
+            </div>
+            <div class="form-group">
+              <label>Pickup Date</label>
+              <input type="date" [(ngModel)]="pickupRequest.pickupDate">
+            </div>
+            <div class="form-group">
+              <label>Preferred Time Slot</label>
+              <select [(ngModel)]="pickupRequest.timeSlot">
+                <option value="">Select a time slot</option>
+                <option *ngFor="let slot of availableTimeSlots" [value]="slot">{{slot}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="waste-types-section">
+            <h3>Waste Types</h3>
+            <p>Select the types of waste you want to recycle</p>
+            <div class="waste-types-grid">
+              <label *ngFor="let type of wasteTypeOptions" class="waste-type-checkbox">
+                <input type="checkbox" 
+                       [checked]="pickupRequest.wasteTypes.includes(type)"
+                       (change)="toggleWasteType(type)">
+                <span>{{type}}</span>
+              </label>
+            </div>
+
+          </div> -->
+          <!-- Volunteer Assignment Section -->
+          <!-- <div class="additional-notes-section">
+
+          </div>
+
+          <div class="additional-notes-section">
+
+            <h3>Additional Notes</h3>
+            <p>Any special instructions or information about your waste</p>
+            <textarea [(ngModel)]="pickupRequest.additionalNotes" 
+                      placeholder="Please provide any additional details that might help our pickup team."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-primary" (click)="schedulePickup()" [disabled]="isLoading">
+              {{isLoading ? 'Scheduling...' : 'Schedule Pickup'}}
+            </button>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- Pickup History Tab -->
+      <div *ngIf="activePickupTab === 'history'" class="pickup-history">
+        <div class="history-header">
+          <h2>Your Pickup History</h2>
+          <p>View and manage all your scheduled pickups</p>
+        </div>
+
+        <div class="history-content">
+          <div *ngIf="pickupHistory.length > 0" class="history-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Address</th>
+                  <th>Items</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pickup of pickupHistory">
+                  <td>{{formatDate(pickup.pickupDate)}}</td>
+                  <td>{{pickup.address}}</td>
+                  <td>{{pickup.items}}</td>
+                  <td>
+                    <span class="status" [class]="getStatusColor(pickup.status)">
+                      {{pickup.status}}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <!-- Accept button only visible to volunteers -->
+                      <button class="btn-small btn-accept" *ngIf="isVolunteer() && pickup.status === 'Scheduled'" (click)="acceptPickup(pickup)">
+                        Accept
+                      </button>
+
+                      <button class="btn-small btn-view" (click)="viewPickup(pickup)">View</button>
+                      <button class="btn-small btn-cancel" *ngIf="pickup.status === 'Scheduled'" (click)="cancelPickup(pickup)">
+                        Cancel
+                      </button>
+                      <button class="btn-small btn-delete" *ngIf="pickup.status !== 'Completed'" (click)="deletePickup(pickup)">
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="pickupHistory.length === 0" class="empty-history">
+            <div class="empty-state">
+              <span class="empty-icon">📦</span>
+              <h3>No pickup history</h3>
+              <p>You haven't scheduled any pickups yet.</p>
+              <button class="btn-secondary" (click)="setPickupTab('schedule')">
+                Schedule your first pickup
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Other sections (impact, settings, support) -->
+    <section *ngIf="activeMenu === 'impact'" [innerHTML]="pages[activeMenu]"></section>
+    <section *ngIf="activeMenu === 'settings'" [innerHTML]="pages[activeMenu]"></section>
+    <section *ngIf="activeMenu === 'support'" [innerHTML]="pages[activeMenu]"></section>
+    <!-- Opportunities container (embedded components) -->
+    <section *ngIf="activeMenu === 'opportunities'">
+      <!-- List -->
+      <app-opportunities *ngIf="opportunityView === 'list'" 
+        (createRequested)="setOpportunityView('create')"
+        (viewDetails)="setOpportunityView('details', $event)" 
+        (editRequested)="setOpportunityView('create', $event)">
+      </app-opportunities>
+
+      <!-- Create/Edit - Only for Admins -->
+      <app-opportunity-form *ngIf="opportunityView === 'create' && canCreateOpportunities()" 
+        [editId]="selectedOpportunityId"
+        (back)="setOpportunityView('list')">
+      </app-opportunity-form>
+
+      <!-- Details -->
+      <app-opportunity-detail *ngIf="opportunityView === 'details'" 
+        [id]="selectedOpportunityId"
+        (back)="setOpportunityView('list')" 
+        (editRequested)="setOpportunityView('create', $event)">
+      </app-opportunity-detail>
+
+      <!-- Access Denied Message for Non-Admins trying to create -->
+      <div *ngIf="opportunityView === 'create' && !canCreateOpportunities()" class="access-denied">
+        <div class="access-denied-content">
+          <h2>🚫 Access Denied</h2>
+          <p>Only administrators can create opportunities.</p>
+          <button class="btn-primary" (click)="setOpportunityView('list')">Back to Opportunities</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Profile Section -->
+    <!-- Profile Section -->
+    <section class="profile-section" *ngIf="activeMenu === 'profile'">
+      
+      <h1>My Profile</h1>
+      <p>Manage your account information and settings</p>
+
+      <div class="tab-buttons">
+        <button [class.active]="activeProfileTab==='profile'" (click)="setProfileTab('profile')">Profile</button>
+        <button [class.active]="activeProfileTab==='password'" (click)="setProfileTab('password')">Password</button>
+      </div>
+
+      <div class="profile-card">
+        <ng-container *ngIf="activeProfileTab==='profile'">
+          <h2>Personal Information</h2>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" [(ngModel)]="userProfile.name" placeholder="Enter your name" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="userProfile.email" placeholder="Enter your email" />
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" [(ngModel)]="userProfile.location" placeholder="Enter your Location" />
+          </div>
+          <div class="form-group">
+            <label>Skills</label>
+            <input type="text" [(ngModel)]="skillsString" placeholder="Add your skills, comma separated" />
+          </div>
+          <button class="save-btn" (click)="updateProfile()">Update Profile</button>
+          <button class="save-btn delete-btn" (click)="deleteProfile()">Delete Profile</button>
+        </ng-container>
+        <ng-container *ngIf="activeProfileTab==='password'">
+          <h2>Change Password</h2>
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" [(ngModel)]="passwordData.currentPassword" placeholder="Enter current password" />
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" [(ngModel)]="passwordData.newPassword" placeholder="Enter new password" />
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" [(ngModel)]="passwordData.confirmPassword" placeholder="Confirm new password" />
+          </div>
+          <button class="save-btn" (click)="updatePassword()">Update Password</button>
+        </ng-container>
+
+      </div>
+
+    </section>
+
+
+    <section *ngIf="activeMenu === 'settings'" class="settings-section">
+      <div class="settings-form">
+        <h1>Settings</h1>
+        <h3>General</h3>
+        <label><input type="checkbox" id="notifToggle"> Enable Notifications</label>
+        <label>Language
+          <select id="languageSelect">
+            <option>English</option>
+            <option>Spanish</option>
+            <option>French</option>
+            <option>German</option>
+          </select>
+        </label>
+        <h3>Privacy</h3>
+        <label><input type="checkbox" id="profileVisibility"> Make Profile Public</label>
+        <h3>Theme</h3>
+        <select id="themeOption">
+          <option>Light</option>
+          <option>Dark</option>
+          <option>Auto</option>
+        </select>
+        <h3>Data Preferences</h3>
+        <button id="downloadData">Download My Data</button>
+        <button id="clearCache">Clear Cache</button>
+      </div>
+    </section>
+
+    <!-- Admin Panel Section -->
+    <section *ngIf="activeMenu === 'admin' && isAdmin()" class="admin-section">
+      <!-- Messages -->
+      <div class="messages" *ngIf="errorMessage || successMessage">
+        <div class="error-message" *ngIf="errorMessage" (click)="clearMessages()">
+          {{ errorMessage }}
+          <button class="close-btn">×</button>
+        </div>
+        <div class="success-message" *ngIf="successMessage" (click)="clearMessages()">
+          {{ successMessage }}
+          <button class="close-btn">×</button>
+        </div>
+      </div>
+
+      <!-- Admin Dashboard Header -->
+      <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage platform users, monitor activity, and generate reports</p>
+        <!-- <button class="btn btn-secondary" (click)="createSampleData()" [disabled]="isLoading">
+          Create Sample Data
+        </button> -->
+      </div>
+
+      <!-- Dashboard Statistics Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <h3>{{ dashboardStats.totalUsers }}</h3>
+            <p>Total Users</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon completed">✅</div>
+          <div class="stat-content">
+            <h3>{{ dashboardStats.completedPickups }}</h3>
+            <p>Completed Pickups</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon pending">⏰</div>
+          <div class="stat-content">
+            <h3>{{ dashboardStats.pendingPickups }}</h3>
+            <p>Pending Pickups</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon opportunities">📄</div>
+          <div class="stat-content">
+            <h3>{{ dashboardStats.activeOpportunities }}</h3>
+            <p>Active Opportunities</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Reports Section -->
+      <div class="reports-section">
+        <div class="section-header">
+          <h2>Generate Reports</h2>
+          <p>Download platform statistics and activity reports</p>
+        </div>
+        
+        <div class="report-buttons">
+          <button class="report-btn" (click)="generateUsersReport()" [disabled]="isLoading">
+            <i class="report-icon">👤</i>
+            <span>Users Report</span>
+          </button>
+          
+          <button class="report-btn" (click)="generatePickupsReport()" [disabled]="isLoading">
+            <i class="report-icon">✅</i>
+            <span>Pickups Report</span>
+          </button>
+          
+          <button class="report-btn" (click)="generateOpportunitiesReport()" [disabled]="isLoading">
+            <i class="report-icon">📄</i>
+            <span>Opportunities Report</span>
+          </button>
+          
+          <button class="report-btn" (click)="generateFullActivityReport()" [disabled]="isLoading">
+            <i class="report-icon">📥</i>
+            <span>Full Activity Report</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button class="tab" [class.active]="activeAdminTab === 'users'" (click)="setActiveAdminTab('users')">
+            Manage Users
+          </button>
+          <button class="tab" [class.active]="activeAdminTab === 'logs'" (click)="setActiveAdminTab('logs')">
+            Admin Logs
+          </button>
+        </div>
+
+        <!-- Users Tab Content -->
+        <div class="tab-content" *ngIf="activeAdminTab === 'users'">
+          <div class="section-header">
+            <h2>Users</h2>
+            <p>Manage user accounts and permissions</p>
+          </div>
+          
+          <div class="search-container">
+            <input 
+              type="text" 
+              placeholder="Search users..." 
+              [(ngModel)]="userSearchTerm"
+              (input)="searchUsers()"
+              class="search-input">
+            <i class="search-icon">🔍</i>
+          </div>
+
+          <!-- User Edit Modal -->
+          <div class="modal-overlay" *ngIf="isEditingUser" (click)="cancelEdit()">
+            <div class="modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="close-btn" (click)="cancelEdit()">×</button>
+              </div>
+              <div class="modal-body" *ngIf="selectedUser">
+                <form (ngSubmit)="saveUser()">
+                  <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" [(ngModel)]="selectedUser.name" name="name" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" [(ngModel)]="selectedUser.email" name="email" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Role</label>
+                    <select [(ngModel)]="selectedUser.role" name="role">
+                      <option value="user">User</option>
+                      <option value="volunteer">Volunteer</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" [(ngModel)]="selectedUser.location" name="location">
+                  </div>
+                  <div class="form-group">
+                    <label>Bio</label>
+                    <textarea [(ngModel)]="selectedUser.bio" name="bio" rows="3"></textarea>
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isLoading">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Users Table -->
+          <div class="table-container">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Location</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of filteredUsers">
+                  <td>
+                    <div class="user-info">
+                      <div class="user-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                      <span>{{ user.name }}</span>
+                    </div>
+                  </td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span class="role-badge" 
+                          [class.admin]="user.role === 'admin'"
+                          [class.volunteer]="user.role === 'volunteer'">
+                      {{ user.role === 'admin' ? 'Admin' : user.role === 'volunteer' ? 'Volunteer' : 'User' }}
+                    </span>
+                  </td>
+                  <td>{{ user.location || 'N/A' }}</td>
+                  <td>{{ formatDate(user.createdAt) }}</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn btn-sm btn-primary" (click)="editUser(user)">
+                        Edit
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="deleteUser(user)">
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div class="no-data" *ngIf="filteredUsers.length === 0">
+              <p>No users found</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Logs Tab Content -->
+        <div class="tab-content" *ngIf="activeAdminTab === 'logs'">
+          <div class="section-header">
+            <h2>Admin Logs</h2>
+            <p>View recent admin actions and system logs</p>
+          </div>
+          
+          <div class="logs-container">
+            <div class="log-item" *ngFor="let log of adminLogs">
+              <div class="log-icon">📝</div>
+              <div class="log-content">
+                <div class="log-action">{{ log.action }}</div>
+                <div class="log-details">
+                  <span class="log-target">Target ID: {{ log.target_id }}</span>
+                  <span class="log-admin">Admin ID: {{ log.admin_id }}</span>
+                  <span class="log-time">{{ formatDate(log.timestamp) }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="no-data" *ngIf="adminLogs.length === 0">
+              <p>No admin logs found</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Access Denied for Admin Panel -->
+    <section *ngIf="activeMenu === 'admin' && !isAdmin()" class="access-denied">
+      <div class="access-denied-content">
+        <h2>🚫 Access Denied</h2>
+        <p>Only administrators can access the admin panel.</p>
+        <button class="btn-primary" (click)="setActive('dashboard')">Back to Dashboard</button>
+      </div>
+    </section>
+
+    <!-- Pickup Details Modal -->
+    <div class="pickup-modal-overlay" *ngIf="showPickupModal" (click)="closePickupModal()">
+      <div class="pickup-modal" (click)="$event.stopPropagation()" *ngIf="selectedPickup">
+        <div class="pickup-modal-header">
+          <h2>📦 Pickup Details</h2>
+          <button class="close-btn" (click)="closePickupModal()">×</button>
+        </div>
+        <div class="pickup-modal-body">
+          <div class="pickup-detail-row">
+            <span class="detail-label">Name:</span>
+            <span class="detail-value">{{selectedPickup.name || 'N/A'}}</span>
+          </div>
+          <div class="pickup-detail-row">
+            <span class="detail-label">Address:</span>
+            <span class="detail-value">{{selectedPickup.address || 'N/A'}}</span>
+          </div>
+          <div class="pickup-detail-row">
+            <span class="detail-label">Contact Number:</span>
+            <span class="detail-value">{{selectedPickup.contactNumber || 'N/A'}}</span>
+          </div>
+          <div class="pickup-detail-row">
+            <span class="detail-label">Pickup Date:</span>
+            <span class="detail-value">{{formatDate(selectedPickup.pickupDate)}}</span>
+          </div>
+          <div class="pickup-detail-row">
+            <span class="detail-label">Items:</span>
+            <span class="detail-value">{{selectedPickup.items || 'N/A'}}</span>
+          </div>
+          <div class="pickup-detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value">
+              <span class="status" [class]="getStatusColor(selectedPickup.status)">
+                {{selectedPickup.status || 'N/A'}}
+              </span>
+            </span>
+          </div>
+          <div class="pickup-detail-row">
+            <span class="detail-label">Created:</span>
+            <span class="detail-value">{{formatDate(selectedPickup.createdAt)}}</span>
+          </div>
+        </div>
+        <div class="pickup-modal-footer">
+          <button class="btn-secondary" (click)="closePickupModal()">Close</button>
+          <button class="btn-primary" (click)="closePickupModal()">OK</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
