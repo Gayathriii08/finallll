@@ -1,0 +1,72 @@
+/* Container */
+.opportunities-container {
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin: 20px auto;
+  max-width: 850px;
+}
+
+/* Section Title */
+.opportunities-container h2 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+/* Subtitle */
+.opportunities-container p.subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+/* Search and Button Row */
+.opportunity-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Search Box */
+.opportunity-actions input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}
+
+.opportunity-actions input:focus {
+  border-color: #4caf50;
+}
+
+/* Create Opportunity Button */
+.opportunity-actions button {
+  background: #2e7d32;
+  color: #fff;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.3s ease;
+}
+
+.opportunity-actions button:hover {
+  background: #2e7d32;
+}
+
+/* No Opportunities Message */
+.no-opportunities {
+  margin-top: 15px;
+  color: #999;
+  font-style: italic;
+  text-align: center;
+  font-size: 1rem;
+}

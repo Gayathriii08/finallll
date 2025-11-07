@@ -1,0 +1,62 @@
+<div class="create-opportunity-container">
+  <a (click)="goBack()" class="back-link">&larr; Back to Opportunities</a>
+  <h2>{{ isEditMode ? 'Edit Opportunity' : 'Create New Opportunity' }}</h2>
+  <p>Post a volunteer opportunity for waste management and recycling</p>
+
+  <form [formGroup]="opportunityForm" (ngSubmit)="onSubmit()" novalidate>
+    <fieldset>
+      <legend>Opportunity Details</legend>
+
+      <div class="form-group">
+        <label>Title</label>
+        <input formControlName="title" placeholder="E.g., Beach Cleanup Drive" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea formControlName="description" placeholder="Provide details about the volunteer opportunity" rows="4" class="form-control"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half-width">
+          <label>Date</label>
+          <input type="date" formControlName="date" class="form-control" />
+        </div>
+
+        <div class="form-group half-width">
+          <label>Duration</label>
+          <input formControlName="duration" placeholder="E.g., 2 hours, 3-4 hours" class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Location</label>
+        <input formControlName="location" placeholder="E.g., Ocean Beach, San Francisco" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Required Skills (comma separated)</label>
+        <input formControlName="required_skills" placeholder="e.g., Teamwork, Teaching" class="form-control" />
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select formControlName="status" class="form-control">
+          <option>Open</option>
+          <option>In Progress</option>
+          <option>Closed</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <button type="submit" class="btn btn-success">{{ isEditMode ? 'Update' : 'Create Opportunity' }}</button>
+  </form>
+
+  <div *ngIf="successMessage" class="alert alert-success mt-3">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+    {{ errorMessage }}
+  </div>
+</div>

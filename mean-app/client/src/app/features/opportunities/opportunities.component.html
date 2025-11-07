@@ -1,0 +1,80 @@
+<div class="opportunity-page">
+  <div class="opportunity-header">
+    <h2>Volunteer Opportunities</h2>
+    <span>Browse and join recycling and waste management initiatives</span>
+   <button *ngIf="userRole === 'admin'" 
+        class="btn-primary" 
+        (click)="onCreate()">+ Create Opportunity
+</button> 
+
+
+  </div>
+
+  <div class="opportunity-filters">
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Search opportunities..." class="search-input" />
+    <select class="status-select" [(ngModel)]="selectedStatus">
+      <option>All Statuses</option>
+      <option>Open</option>
+      <option>Closed</option>
+      <option>In Progress</option>
+    </select>
+  </div>
+
+  <div class="opportunity-list">
+    <ng-container *ngIf="filteredOpportunities.length > 0; else emptyState">
+      <div *ngFor="let opp of filteredOpportunities" class="opportunity-card">
+        <h3>{{ opp.title }}</h3>
+        <div class="opportunity-meta">
+          <span class="opp-status"><strong>Status:</strong> {{ opp.status }}</span>
+          <span><strong>ID:</strong> {{ opp._id || opp.id }}</span>
+        </div>
+        <p><strong>Description:</strong> {{ opp.description }}</p>
+        <p><strong>Required Skills:</strong> {{ (opp.required_skills || []).join(', ') }}</p>
+        <p><strong>Duration:</strong> {{ opp.duration }}</p>
+        <p><strong>Location:</strong> {{ opp.location }}</p>
+
+        <div class="action-row">
+  <!-- Always visible -->
+  <button class="btn btn-view" (click)="onView((opp._id || opp.id)?.toString())">
+    👁 View
+  </button>
+
+  <!-- Only for admin -->
+  <button *ngIf="userRole === 'admin'" 
+          class="btn btn-edit" 
+          (click)="onEdit((opp._id || opp.id)?.toString())">
+    ✏️ Edit
+  </button>
+
+  <button *ngIf="userRole === 'admin'" 
+          class="btn btn-delete" 
+          (click)="onDelete((opp._id || opp.id)?.toString())">
+    🗑 Delete
+  </button> 
+  <!-- Apply button for volunteers / regular users -->
+<button *ngIf="userRole !== 'admin'" 
+        class="btn btn-apply"
+        (click)="applyToOpportunity((opp._id || opp.id)?.toString(), opp)">
+  ➤ Apply
+</button>
+
+</div>
+
+      </div>
+    </ng-container>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <p>No opportunities found matching your criteria.</p>
+        <small class="text-muted">Check back later for new opportunities.</small>
+      </div>
+    </ng-template>
+  </div>
+  <app-confirm-modal
+    [title]="'Delete Opportunity'"
+    [message]="'Are you sure you want to delete this opportunity?'"
+    [(visible)]="showConfirmModal"
+    (onConfirm)="confirmDelete()"
+    (onCancel)="cancelDelete()"
+></app-confirm-modal>
+</div>

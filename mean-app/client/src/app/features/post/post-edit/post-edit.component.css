@@ -1,0 +1,99 @@
+.edit-post-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 25px;
+  border-radius: 12px;
+  background: var(--card-bg, #ffffff);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease;
+}
+
+h2 {
+  text-align: center;
+  color: var(--primary-color, #2c3e50);
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+label span {
+  color: red;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  background-color: var(--input-bg, #f9f9f9);
+  color: var(--text-color, #333);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary-color, #2c3e50);
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button[type='submit'] {
+  background-color: var(--primary-color, #2c3e50);
+  color: #fff;
+}
+
+button[type='submit']:hover {
+  background-color: var(--primary-hover, #1a252f);
+}
+
+.cancel-btn {
+  background-color: #ccc;
+  color: #000;
+}
+
+.cancel-btn:hover {
+  background-color: #b3b3b3;
+}
+
+.error {
+  color: red;
+  font-size: 0.85rem;
+}
+
+.message {
+  text-align: center;
+  margin-top: 15px;
+  color: var(--primary-color, #2c3e50);
+  font-weight: 500;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #777;
+}

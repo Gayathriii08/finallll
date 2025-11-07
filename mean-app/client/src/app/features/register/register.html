@@ -1,0 +1,103 @@
+<div class="register-container">
+  <div class="register-left">
+    <div class="register-brand">
+      <div class="logo-circle"></div>
+      <span class="brand-name">WasteZero</span>
+    </div>
+    <h1 class="register-title">Welcome</h1>
+    <p class="register-subtitle">Sign up to continue your eco-friendly journey</p>
+  </div>
+
+  <div class="register-right">
+    <div class="register-form-container">
+      <form class="register-form" (ngSubmit)="onRegister()">
+        <h2>Sign Up</h2>
+
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="name" 
+            class="form-input"
+            [(ngModel)]="registerData.name"
+            name="name"
+            required
+          />
+          <label for="name" class="form-label">User Name</label>
+        </div>
+
+        <div class="input-group">
+          <input 
+            type="email" 
+            id="email" 
+            class="form-input"
+            [(ngModel)]="registerData.email"
+            name="email"
+            required
+          />
+          <label for="email" class="form-label">Email Address</label>
+        </div>
+
+        <div class="input-group">
+          <input 
+            type="password" 
+            id="password" 
+            class="form-input"
+            [(ngModel)]="registerData.password"
+            name="password"
+            required
+          />
+          <label for="password" class="form-label">Password</label>
+        </div>
+
+        <div class="input-group">
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            class="form-input"
+            [(ngModel)]="registerData.confirmPassword"
+            name="confirmPassword"
+            required
+          />
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+        </div>
+
+        <div class="input-group">
+          <select 
+            id="role" 
+            class="form-select"
+            [(ngModel)]="registerData.role"
+            name="role"
+            required
+          >
+            <option value="volunteer">Volunteer</option>
+            <option value="admin">Admin</option>
+          </select>
+          <label for="role" class="form-label select-label">Role</label>
+        </div>
+
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="location" 
+            class="form-input"
+            [(ngModel)]="registerData.location"
+            name="location"
+            required
+          />
+          <label for="location" class="form-label">Location</label>
+        </div>
+
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" [(ngModel)]="agreeTerms" name="agreeTerms">
+            <span class="checkmark"></span>
+            I agree to Terms & Conditions
+          </label>
+        </div>
+
+        <button type="submit" class="signup-btn">Sign Up</button>
+      </form>
+    </div>
+  </div>
+</div>

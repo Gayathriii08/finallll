@@ -1,0 +1,81 @@
+/* Light Mode - Default */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-card {
+    background: #ffffff;
+    padding: 24px 28px;
+    border-radius: 12px;
+    width: 320px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #2563eb;
+}
+
+.modal-card p {
+    margin-bottom: 20px;
+    color: #475569;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #1e293b;
+    border-radius: 6px;
+    padding: 8px 20px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+/* Dark Mode */
+body.dark .modal-backdrop {
+    background: rgba(0, 0, 0, 0.75) !important;
+}
+
+body.dark .modal-card {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark .modal-card h3 {
+    color: #60a5fa;
+}
+
+body.dark .modal-card p {
+    color: #cbd5e1;
+}
+
+body.dark .btn-secondary {
+    background: #475569;
+    color: #e2e8f0;
+}
+
+body.dark .btn-secondary:hover {
+    background: #334155;
+}
