@@ -8,7 +8,18 @@
   </nav>
 </header>
 <div class="dashboard-wrapper">
-  <aside class="sidebar">
+  <!-- Hamburger Menu Button -->
+  <button class="hamburger-menu" (click)="toggleSidebar()">
+    ☰
+  </button>
+
+  <!-- Sidebar Overlay (for closing sidebar when clicking outside) -->
+  <div class="sidebar-overlay" 
+       [class.active]="sidebarOpen" 
+       (click)="toggleSidebar()">
+  </div>
+
+  <aside class="sidebar" [class.active]="sidebarOpen">
     <div class="profile">
       <img src="https://i.ibb.co/PGv8ZzG/user.png" alt="User Profile" />
       <h3>{{userProfile.name || 'User'}}</h3>
@@ -793,7 +804,55 @@
                 </tr>
               </tbody>
             </table>
-            
+
+            <!-- Mobile Card View (Mobile Only) -->
+            <div class="users-mobile-cards" *ngIf="filteredUsers.length > 0">
+              <div class="user-card-mobile" *ngFor="let user of filteredUsers">
+                <!-- Card Header -->
+                <div class="user-card-header">
+                  <div class="user-card-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                  <div class="user-card-info">
+                    <div class="user-card-name">{{ user.name }}</div>
+                    <div class="user-card-email">{{ user.email }}</div>
+                  </div>
+                </div>
+
+                <!-- Card Details -->
+                <div class="user-card-details">
+                  <div class="user-detail-row">
+                    <span class="user-detail-label">Role:</span>
+                    <span class="user-detail-value">
+                      <span class="role-badge" 
+                            [class.admin]="user.role === 'admin'"
+                            [class.volunteer]="user.role === 'volunteer'">
+                        {{ user.role === 'admin' ? 'Admin' : user.role === 'volunteer' ? 'Volunteer' : 'User' }}
+                      </span>
+                    </span>
+                  </div>
+
+                  <div class="user-detail-row">
+                    <span class="user-detail-label">Location:</span>
+                    <span class="user-detail-value">{{ user.location || 'N/A' }}</span>
+                  </div>
+
+                  <div class="user-detail-row">
+                    <span class="user-detail-label">Joined:</span>
+                    <span class="user-detail-value">{{ formatDate(user.createdAt) }}</span>
+                  </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="user-card-actions">
+                  <button class="btn-primary" (click)="editUser(user)">
+                    ✏️ Edit
+                  </button>
+                  <button class="btn-danger" (click)="deleteUser(user)">
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="no-data" *ngIf="filteredUsers.length === 0">
               <p>No users found</p>
             </div>
@@ -885,4 +944,32 @@
       </div>
     </div>
   </main>
+  <!-- Bottom Navigation Bar - MOBILE ONLY -->
+  <nav class="bottom-nav" *ngIf="isMobileView()">
+    <button class="nav-item" [class.active]="activeMenu === 'dashboard'" (click)="setActive('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Dashboard</span>
+    </button>
+    
+    <button class="nav-item" [class.active]="activeMenu === 'schedule'" (click)="setActive('schedule')" *ngIf="canSchedulePickup()">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Schedule</span>
+    </button>
+    
+    <button class="nav-item" [class.active]="activeMenu === 'opportunities'" (click)="setActive('opportunities')">
+      <span class="nav-icon">🤝</span>
+      <span class="nav-label">Volunteer</span>
+    </button>
+    
+    <button class="nav-item" [class.active]="activeMenu === 'messages'" (click)="setActive('messages')">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Chat</span>
+    </button>
+    
+    <button class="nav-item" [class.active]="activeMenu === 'profile'" (click)="setActive('profile')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
 </div>
