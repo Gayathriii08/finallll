@@ -57,35 +57,72 @@ export const deleteOpportunity = async (req, res) => {
 };
 
 // Accept a simple application payload: { userId, appliedAt, message }
-export const applyToOpportunity = async (req, res) => {
-  try {
-    const opportunityId = req.params.id;
-    const { userId, appliedAt, message } = req.body;
+// export const applyToOpportunity = async (req, res) => {
+//   try {
+//     const opportunityId = req.params.id;
+//     const { userId, appliedAt, message } = req.body;
 
-    // Minimal validation
-    if (!opportunityId || !userId) {
-      return res.status(400).json({ message: 'Missing opportunityId or userId' });
-    }
+//     // Minimal validation
+//     if (!opportunityId || !userId) {
+//       return res.status(400).json({ message: 'Missing opportunityId or userId' });
+//     }
 
     // For now: persist applications in a new collection or embedded array.
 
-    const Opportunity = require('./opportunity.model').default || require('./opportunity.model');
-    const opp = await Opportunity.findById(opportunityId);
-    if (!opp) return res.status(404).json({ message: 'Opportunity not found' });
+//     const Opportunity = require('./opportunity.model').default || require('./opportunity.model');
+//     const opp = await Opportunity.findById(opportunityId);
+//     if (!opp) return res.status(404).json({ message: 'Opportunity not found' });
 
-    // Add applicants array if not present
-    if (!opp.applicants) opp.applicants = [];
-    opp.applicants.push({
+//     // Add applicants array if not present
+//     if (!opp.applicants) opp.applicants = [];
+//     opp.applicants.push({
+//       userId,
+//       message: message || '',
+//       appliedAt: appliedAt || new Date()
+//     });
+
+//     await opp.save();
+
+//     res.json({ message: 'Application received' });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: err.message || 'Server error' });
+//   }
+// };
+
+// Apply to an opportunity
+export const applyToOpportunity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, message } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const opportunity = await Opportunity.findById(id);
+    if (!opportunity) {
+      return res.status(404).json({ message: "Opportunity not found" });
+    }
+
+    // Check if already applied
+    const alreadyApplied = opportunity.applicants.some(app => app.userId === userId);
+    if (alreadyApplied) {
+      return res.status(400).json({ message: "You already applied for this opportunity." });
+    }
+
+    // Add applicant
+    opportunity.applicants.push({
       userId,
-      message: message || '',
-      appliedAt: appliedAt || new Date()
+      message: message || "",
+      appliedAt: new Date(),
     });
 
-    await opp.save();
+    await opportunity.save();
 
-    res.json({ message: 'Application received' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message || 'Server error' });
+    res.status(200).json({ message: "Application submitted successfully!" });
+  } catch (error) {
+    console.error("Error in applyToOpportunity:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 };

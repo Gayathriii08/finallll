@@ -137,9 +137,10 @@ export class Dashboard implements OnInit {
   // Navigation & UI State
   activeMenu: string = 'dashboard';
   activeProfileTab: string = 'profile';
+   user: any = {};  
   
-  
-  activePickupTab: 'schedule' | 'history' = 'schedule';
+  // activePickupTab: 'schedule' | 'history' = 'schedule';
+    activePickupTab: 'schedule' | 'history' = 'history';
   activeAdminTab: 'users' | 'logs' = 'users';
   opportunityView: 'list' | 'create' | 'details' = 'list';
   selectedOpportunityId: string | null = null;
@@ -326,6 +327,10 @@ selectedVolunteer: any = null;
     this.getVolunteers();
     this.getUserProfile();
     this.loadDashboardData();
+      // Default tab for volunteers
+if (this.isVolunteer()) {
+  this.activePickupTab = 'history';
+}
     // Check if mobile and listen for resize changes
     this.checkIfMobile();
     window.addEventListener('resize', () => this.checkIfMobile());
