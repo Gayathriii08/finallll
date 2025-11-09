@@ -42,32 +42,40 @@ export const createPickup = async (req, res) => {
     const newPickup = new Pickup(pickupData);
     const savedPickup = await newPickup.save();
 
-    console.log("✅ Saved pickup:", savedPickup);
-    res.status(201).json({
-      message: "Pickup scheduled successfully",
-      pickup: savedPickup,
-    });
+    console.log('Saved pickup:', savedPickup);
+
+    res.status(201).json({ message: "Pickup scheduled successfully", pickup: savedPickup });
   } catch (error) {
-    console.error("Error creating pickup:", error);
+    console.error('Error creating pickup:', error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
-};
+}
 
-/* 👤 USER-SPECIFIC PICKUPS (fetch by logged-in user) */
+// Get pickups for current user
 export const getUserPickups = async (req, res) => {
   try {
-    
     const userId = req.user?.id;
-    if (!userId)
+    
+    if (!userId) {
       return res.status(401).json({ message: "User not authenticated" });
+    }
 
-    const pickups = await Pickup.find({
-      $or: [{ userId: userId }, { userId: { $exists: false } }],
+    console.log('Fetching pickups for user:', userId);
+
+    // Get pickups where userId matches, OR where userId doesn't exist (old records)
+    const pickups = await Pickup.find({ 
+      $or: [
+        { userId: userId },
+        { userId: { $exists: false } }
+      ]
     }).sort({ pickupDate: -1 });
-
+    
+    console.log('Found pickups:', pickups.length);
+    console.log('Pickup data:', pickups);
+    
     res.json(pickups);
   } catch (error) {
-    console.error("Error fetching pickups:", error);
+    console.error('Error fetching pickups:', error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -111,29 +119,31 @@ export const getPickupById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-/* ❌ CANCEL PICKUP */
 export const cancelPickup = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
     const pickup = await Pickup.findById(id);
-
-    if (!pickup)
+    
+    if (!pickup) {
       return res.status(404).json({ message: "Pickup not found" });
-
-    if (pickup.userId && pickup.userId !== userId)
+    }
+    
+    if (pickup.userId && pickup.userId !== userId) {
       return res.status(403).json({ message: "You can only cancel your own pickups" });
-
-    if (pickup.status === "Cancelled")
+    }
+    
+    if (pickup.status === 'Cancelled') {
       return res.status(400).json({ message: "Pickup is already cancelled" });
-
-    if (pickup.status === "Completed")
+    }
+    
+    if (pickup.status === 'Completed') {
       return res.status(400).json({ message: "Cannot cancel completed pickup" });
-
-    pickup.status = "Cancelled";
+    }
+    
+    pickup.status = 'Cancelled';
     await pickup.save();
-
+    
     res.json({ success: true, message: "Pickup cancelled successfully", pickup });
   } catch (error) {
     console.error(error);
@@ -141,7 +151,7 @@ export const cancelPickup = async (req, res) => {
   }
 };
 
-/* ✅ VOLUNTEER COMPLETES A PICKUP */
+
 export const acceptPickup = async (req, res) => {
   try {
     const { id } = req.params;
@@ -182,19 +192,24 @@ export const deletePickup = async (req, res) => {
     const userId = req.user?.id;
 
     const pickup = await Pickup.findById(id);
-    if (!pickup)
+    if (!pickup) {
       return res.status(404).json({ message: "Pickup not found" });
+    }
 
-    if (pickup.userId && pickup.userId !== userId)
+    // Ensure user owns this pickup if userId is present on the document
+    if (pickup.userId && pickup.userId !== userId) {
       return res.status(403).json({ message: "You can only delete your own pickups" });
+    }
 
-    if (pickup.status === "Completed")
+    if (pickup.status === 'Completed') {
       return res.status(400).json({ message: "Cannot delete completed pickup" });
+    }
 
     await Pickup.findByIdAndDelete(id);
+
     res.json({ success: true, message: "Pickup deleted successfully" });
   } catch (error) {
-    console.error("Error deleting pickup:", error);
+    console.error('Error deleting pickup:', error);
     res.status(500).json({ message: "Server error" });
   }
 };

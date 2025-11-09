@@ -1,5 +1,5 @@
 import express from "express";
-import * as userController from "./user.controller.js"; 
+import * as userController from "./user.controller.js";
 import auth from "../../middleware/auth.js";
 
 const router = express.Router();
@@ -14,7 +14,7 @@ router.put("/profile", auth, userController.updateProfile);
 
 router.delete("/profile", auth, userController.deleteProfile);
 // Password update
-router.put('/profile/password', auth, userController.updatePassword);
+router.put("/profile/password", auth, userController.updatePassword);
 router.get("/volunteers", auth, userController.getVolunteers);
 
 export default router;

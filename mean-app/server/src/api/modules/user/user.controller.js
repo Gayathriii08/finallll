@@ -12,12 +12,15 @@ export const register = async (req, res, next) => {
 };
 export const getVolunteers = async (req, res) => {
   try {
-    const volunteers = await User.find({ role: "volunteer" })
-      .select("_id name email role");
-    
+    const volunteers = await User.find({ role: "volunteer" }).select(
+      "_id name email role"
+    );
+
     res.json({ success: true, data: volunteers });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to fetch volunteers" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch volunteers" });
   }
 };
 export const login = async (req, res, next) => {
@@ -51,7 +54,9 @@ export const updateProfile = async (req, res, next) => {
 export const deleteProfile = async (req, res, next) => {
   try {
     await userService.deleteProfile(req.user.id);
-    res.status(200).json({ success: true, message: "Profile deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Profile deleted successfully" });
   } catch (err) {
     next(err);
   }
@@ -63,12 +68,20 @@ export const updatePassword = async (req, res, next) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ success: false, message: "Both fields required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Both fields required" });
     }
 
-    const user = await userService.updatePassword(req.user.id, currentPassword, newPassword);
+    const user = await userService.updatePassword(
+      req.user.id,
+      currentPassword,
+      newPassword
+    );
 
-    res.status(200).json({ success: true, message: "Password updated successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
   } catch (err) {
     next(err);
   }
