@@ -340,7 +340,7 @@
         <p>Request waste collection and manage your pickups</p>
       </div>
 
-       <div class="schedule-tabs">
+       <!-- <div class="schedule-tabs">
        <button [class.active]="activePickupTab === 'schedule'" (click)="setPickupTab('schedule')">
   Schedule New Pickup
 </button>
@@ -348,11 +348,25 @@
         <button [class.active]="activePickupTab === 'history'" (click)="setPickupTab('history')">
           Pickup History
         </button>
-      </div>
+      </div> -->
 
+<div class="schedule-tabs">
       <!-- Schedule New Pickup Tab -->
-     <div *ngIf="activePickupTab === 'schedule'" class="schedule-form">
-  <div class="form-section">
+         <button
+    *ngIf="isAdmin()"
+    [class.active]="activePickupTab === 'schedule'"
+    (click)="setPickupTab('schedule')"
+  >
+    Schedule New Pickup
+  </button>
+   <button [class.active]="activePickupTab === 'history'" (click)="setPickupTab('history')">
+    Pickup History
+  </button>
+</div>
+     <!-- <div *ngIf="activePickupTab === 'schedule'" class="schedule-form">
+  <div class="form-section"> -->
+    <div *ngIf="activePickupTab === 'schedule' && isAdmin()" class="schedule-form">
+        <div class="form-section">
     <h2>Request Waste Collection</h2>
     <p>Fill in the details to schedule a pickup for your recyclable waste</p>
 
