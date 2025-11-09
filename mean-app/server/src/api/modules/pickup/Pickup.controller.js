@@ -63,12 +63,34 @@ export const getUserPickups = async (req, res) => {
     console.log('Fetching pickups for user:', userId);
 
     // Get pickups where userId matches, OR where userId doesn't exist (old records)
-    const pickups = await Pickup.find({ 
-      $or: [
-        { userId: userId },
-        { userId: { $exists: false } }
-      ]
-    }).sort({ pickupDate: -1 });
+     const pickups = await Pickup.aggregate([
+      {
+        $match: {
+          $or: [
+            { userId: userId },
+            { userId: { $exists: false } }
+          ]
+        }
+      },
+      {
+        $addFields: {
+          statusPriority: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$status", "Scheduled"] }, then: 1 },
+                { case: { $eq: ["$status", "Completed"] }, then: 2 },
+                { case: { $eq: ["$status", "Cancelled"] }, then: 3 }
+              ],
+              default: 4
+            }
+          }
+        }
+      },
+      {
+        $sort: { statusPriority: 1, pickupDate: 1 }
+      }
+    ]);
+    
     
     console.log('Found pickups:', pickups.length);
     console.log('Pickup data:', pickups);
@@ -83,7 +105,25 @@ export const getUserPickups = async (req, res) => {
 /* 🧹 ADMIN FETCH ALL PICKUPS */
 export const getAllPickups = async (req, res) => {
   try {
-    const pickups = await Pickup.find().sort({ pickupDate: 1 });
+        const pickups = await Pickup.aggregate([
+      {
+        $addFields: {
+          statusPriority: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$status", "Scheduled"] }, then: 1 },
+                { case: { $eq: ["$status", "Completed"] }, then: 2 },
+                { case: { $eq: ["$status", "Cancelled"] }, then: 3 }
+              ],
+              default: 4
+            }
+          }
+        }
+      },
+      {
+        $sort: { statusPriority: 1, pickupDate: 1 }
+      }
+    ]);
     res.json(pickups);
   } catch (error) {
     console.error(error);
@@ -95,8 +135,28 @@ export const getAllPickups = async (req, res) => {
 export const getVolunteerPickups = async (req, res) => {
   try {
     const volunteerId = req.user._id; // populated from JWT middleware
-    const pickups = await Pickup.find({ assignedVolunteerId: volunteerId })
-      .sort({ pickupDate: -1 });
+        const pickups = await Pickup.aggregate([
+      {
+        $match: { assignedVolunteerId: volunteerId }
+      },
+      {
+        $addFields: {
+          statusPriority: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$status", "Scheduled"] }, then: 1 },
+                { case: { $eq: ["$status", "Completed"] }, then: 2 },
+                { case: { $eq: ["$status", "Cancelled"] }, then: 3 }
+              ],
+              default: 4
+            }
+          }
+        }
+      },
+      {
+        $sort: { statusPriority: 1, pickupDate: 1 }
+      }
+    ]);
     res.status(200).json(pickups);
   } catch (error) {
     console.error("Error fetching volunteer pickups:", error);
