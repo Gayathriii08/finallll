@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { UserService } from '../../services/user.service';
+
 
 // Standalone components
 import { OpportunitiesComponent } from '../opportunities/opportunities.component';
@@ -231,13 +233,19 @@ export class Dashboard implements OnInit {
   newConversationMessage: string = '';
   availableUsers: User[] = [];
   searchUserTerm: string = '';
-  
+  displayVolunteerDropdown: boolean=false;
   // Pickup Data
   pickupRequest: PickupRequest = this.getEmptyPickupRequest();
   pickupHistory: PickupHistory[] = [];
   showPickupModal: boolean = false;
   selectedPickup: PickupHistory | null = null;
-  
+  searchVolunteerTerm: string = '';
+availableVolunteers: any[] = [];  // fetched from backend
+selectedVolunteer: any = null;
+  volunteers: any[] = [];
+  filteredVolunteers: any[] = [];
+
+
   // Configuration
   readonly availableTimeSlots = [
     '9:00 AM - 11:00 AM',
@@ -295,6 +303,7 @@ export class Dashboard implements OnInit {
   constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit() {
+
     this.userRole = localStorage.getItem('userRole') || 'volunteer';
     if (!this.isAuthenticated()) {
       this.router.navigate(['/login']);
@@ -310,10 +319,26 @@ export class Dashboard implements OnInit {
     } else {
       this.isDarkMode = false;
     }
-    
+this.getVolunteers();
+
     this.getUserProfile();
     this.loadDashboardData();
+
   }
+filterVolunteers() {
+  console.log(this.searchVolunteerTerm);
+  if (!this.searchVolunteerTerm|| this.searchVolunteerTerm.trim() === "") {
+    return this.availableVolunteers;
+  }
+
+  const term = this.searchVolunteerTerm.toLowerCase();
+
+  return this.availableVolunteers.filter(user =>
+    user.name.toLowerCase().includes(term) ||
+    user.email.toLowerCase().includes(term)
+  );
+
+}
 
   // ==================== AUTHENTICATION & PROFILE ====================
   
@@ -347,6 +372,34 @@ export class Dashboard implements OnInit {
       }
     });
   }
+getVolunteers() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    console.error("No token found!");
+    return;
+  }
+
+  this.http.get("http://localhost:5000/api/v1/volunteers", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }).subscribe({
+    next: (res: any) => {
+      this.availableVolunteers = res?.data || [];
+      console.log("Fetched volunteers:", this.availableVolunteers);
+    },
+    error: (err) => {
+      console.error("Error fetching volunteers:", err);
+    }
+  });
+}
+
+
+
+
+
+
 
   updateProfile() {
     const payload = {
@@ -697,7 +750,30 @@ export class Dashboard implements OnInit {
       }
     });
   }
+  getFilteredVolunteers() {
+  if (!this.searchVolunteerTerm.trim()) {
+    return this.availableVolunteers;
+  }
+  const searchTerm = this.searchVolunteerTerm.toLowerCase();
+  return this.availableVolunteers.filter(v => 
+    v.name.toLowerCase().includes(searchTerm) ||
+    v.email.toLowerCase().includes(searchTerm)
+  );
+}
 
+selectVolunteer(volunteer: any) {
+  this.selectedVolunteer = volunteer;
+  this.searchVolunteerTerm = volunteer.name;
+  this.hideVolunteerDropdown();
+}
+showVolunteerDropdown(){
+  this.displayVolunteerDropdown=true;
+
+}
+hideVolunteerDropdown(){
+    this.displayVolunteerDropdown=false;
+
+}
   getFilteredUsers(): User[] {
     if (!this.searchUserTerm.trim()) {
       return this.availableUsers;
@@ -804,41 +880,53 @@ export class Dashboard implements OnInit {
   }
 
   schedulePickup() {
-    if (!this.validatePickupForm()) return;
+  if (!this.validatePickupForm()) return;
 
-    const pickupData = {
-      name: this.pickupRequest.name,
-      address: `${this.pickupRequest.address}, ${this.pickupRequest.city}`,
-      contactNumber: this.pickupRequest.contactNumber,
-      pickupDate: this.pickupRequest.pickupDate,
-      items: this.pickupRequest.wasteTypes.join(', ')
-    };
-
-    this.isLoading = true;
-    this.clearMessages();
-    
-    this.http.post<{message: string, pickup: PickupHistory}>(
-      `${this.pickupApiUrl}/schedule`,
-      pickupData,
-      { headers: this.getAuthHeaders() }
-    ).subscribe({
-      next: (response) => {
-        this.showSuccess('Pickup scheduled successfully!');
-        this.resetPickupForm();
-        this.loadPickupHistory();
-        this.isLoading = false;
-        
-        setTimeout(() => {
-          this.setPickupTab('history');
-          this.clearMessages();
-        }, 2000);
-      },
-      error: (error) => {
-        this.showError(error.error?.message || 'Failed to schedule pickup');
-        this.isLoading = false;
-      }
-    });
+  // Ensure volunteer is selected
+  if (!this.selectedVolunteer) {
+    this.showError('Please assign a volunteer before scheduling a pickup.');
+    return;
   }
+
+  // Prepare pickup data
+  const pickupData = {
+    name: this.pickupRequest.name,
+    address: `${this.pickupRequest.address}, ${this.pickupRequest.city}`,
+    contactNumber: this.pickupRequest.contactNumber,
+    pickupDate: this.pickupRequest.pickupDate,
+    items: this.pickupRequest.wasteTypes.join(', '),
+    additionalNotes: this.pickupRequest.additionalNotes || '',
+    assignedVolunteerId: this.selectedVolunteer._id,  // 👈 added field
+    assignedVolunteerName: this.selectedVolunteer.name  // optional for UI use
+  };
+
+  this.isLoading = true;
+  this.clearMessages();
+
+  this.http.post<{ message: string; pickup: PickupHistory }>(
+    `${this.pickupApiUrl}/schedule`,
+    pickupData,
+    { headers: this.getAuthHeaders() }
+  ).subscribe({
+    next: (response) => {
+      this.showSuccess(`Pickup scheduled and assigned to ${this.selectedVolunteer.name} successfully!`);
+      this.resetPickupForm();
+      this.selectedVolunteer = null; // clear volunteer after scheduling
+      this.searchVolunteerTerm = '';
+      this.loadPickupHistory();
+      this.isLoading = false;
+
+      setTimeout(() => {
+        this.setPickupTab('history');
+        this.clearMessages();
+      }, 2000);
+    },
+    error: (error) => {
+      this.showError(error.error?.message || 'Failed to schedule pickup');
+      this.isLoading = false;
+    }
+  });
+}
 
   validatePickupForm(): boolean {
     const required = [
@@ -914,6 +1002,7 @@ export class Dashboard implements OnInit {
       }
     });
   }
+ 
 
   deletePickup(pickup: PickupHistory) {
     if (pickup.status === 'Completed') {
@@ -944,6 +1033,15 @@ export class Dashboard implements OnInit {
       }
     });
   }
+
+filterUsers() {
+  const term = this.searchUserTerm?.toLowerCase() || '';
+  this.filteredVolunteers = this.volunteers.filter(v =>
+    v.name.toLowerCase().includes(term) ||
+    v.email.toLowerCase().includes(term)
+  );
+}
+
 
   /**
    * Accept a pickup — only volunteers can accept pickups.

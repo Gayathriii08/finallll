@@ -1,4 +1,5 @@
 import userService from "./user.service.js";
+import User from "./user.model.js";
 
 // ------------------ AUTH ------------------
 export const register = async (req, res, next) => {
@@ -9,7 +10,16 @@ export const register = async (req, res, next) => {
     next(err);
   }
 };
-
+export const getVolunteers = async (req, res) => {
+  try {
+    const volunteers = await User.find({ role: "volunteer" })
+      .select("_id name email role");
+    
+    res.json({ success: true, data: volunteers });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to fetch volunteers" });
+  }
+};
 export const login = async (req, res, next) => {
   try {
     const data = await userService.login(req.body);

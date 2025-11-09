@@ -3316,3 +3316,28 @@ body.dark .access-denied-content h2 {
     font-size: 2rem;
   }
 }
+.assign-volunteer-section {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.selected-user {
+  background: #e6ffe6;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  color: #2b7a2b;
+}
+
+.user-dropdown {
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-top: 4px;
+}

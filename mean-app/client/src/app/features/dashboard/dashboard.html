@@ -330,63 +330,135 @@
       </div>
 
        <div class="schedule-tabs">
-       <!-- <button [class.active]="activePickupTab === 'schedule'" (click)="setPickupTab('schedule')">
-          Schedule New Pickup
-        </button> -->
+       <button [class.active]="activePickupTab === 'schedule'" (click)="setPickupTab('schedule')">
+  Schedule New Pickup
+</button>
+
         <button [class.active]="activePickupTab === 'history'" (click)="setPickupTab('history')">
           Pickup History
         </button>
       </div>
 
       <!-- Schedule New Pickup Tab -->
-      <!-- <div *ngIf="activePickupTab === 'schedule'" class="schedule-form">
-        <div class="form-section">
-          <h2>Request Waste Collection</h2>
-          <p>Fill in the details to schedule a pickup for your recyclable waste</p>
+     <div *ngIf="activePickupTab === 'schedule'" class="schedule-form">
+  <div class="form-section">
+    <h2>Request Waste Collection</h2>
+    <p>Fill in the details to schedule a pickup for your recyclable waste</p>
 
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Name</label>
-              <input type="text" [(ngModel)]="pickupRequest.name" placeholder="Enter your full name">
-            </div>
-            <div class="form-group">
-              <label>Address</label>
-              <input type="text" [(ngModel)]="pickupRequest.address" placeholder="Enter your street address">
-            </div>
-            <div class="form-group">
-              <label>City</label>
-              <input type="text" [(ngModel)]="pickupRequest.city" placeholder="Enter your city">
-            </div>
-            <div class="form-group">
-              <label>Contact Number</label>
-              <input type="tel" [(ngModel)]="pickupRequest.contactNumber" placeholder="Enter your phone number">
-            </div>
-            <div class="form-group">
-              <label>Pickup Date</label>
-              <input type="date" [(ngModel)]="pickupRequest.pickupDate">
-            </div>
-            <div class="form-group">
-              <label>Preferred Time Slot</label>
-              <select [(ngModel)]="pickupRequest.timeSlot">
-                <option value="">Select a time slot</option>
-                <option *ngFor="let slot of availableTimeSlots" [value]="slot">{{slot}}</option>
-              </select>
-            </div>
-          </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="pickupRequest.name" placeholder="Enter your full name">
+      </div>
 
-          <div class="waste-types-section">
-            <h3>Waste Types</h3>
-            <p>Select the types of waste you want to recycle</p>
-            <div class="waste-types-grid">
-              <label *ngFor="let type of wasteTypeOptions" class="waste-type-checkbox">
-                <input type="checkbox" 
-                       [checked]="pickupRequest.wasteTypes.includes(type)"
-                       (change)="toggleWasteType(type)">
-                <span>{{type}}</span>
-              </label>
-            </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" [(ngModel)]="pickupRequest.address" placeholder="Enter your street address">
+      </div>
 
-          </div> -->
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" [(ngModel)]="pickupRequest.city" placeholder="Enter your city">
+      </div>
+
+      <div class="form-group">
+        <label>Contact Number</label>
+        <input type="tel" [(ngModel)]="pickupRequest.contactNumber" placeholder="Enter your phone number">
+      </div>
+
+      <div class="form-group">
+        <label>Pickup Date</label>
+        <input type="date" [(ngModel)]="pickupRequest.pickupDate">
+      </div>
+
+      <div class="form-group">
+        <label>Preferred Time Slot</label>
+        <select [(ngModel)]="pickupRequest.timeSlot">
+          <option value="">Select a time slot</option>
+          <option *ngFor="let slot of availableTimeSlots" [value]="slot">{{slot}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="waste-types-section">
+      <h3>Waste Types</h3>
+      <p>Select the types of waste you want to recycle</p>
+
+      <div class="waste-types-grid">
+        <label *ngFor="let type of wasteTypeOptions" class="waste-type-checkbox">
+          <input type="checkbox" 
+                 [checked]="pickupRequest.wasteTypes.includes(type)"
+                 (change)="toggleWasteType(type)">
+          <span>{{type}}</span>
+        </label>
+      </div>
+    </div>
+      <!-- Assign Volunteer Section -->
+<div class="assign-volunteer-section">
+  <h3>Assign Volunteer</h3>
+  <p>Select a volunteer to handle this pickup request.</p>
+
+  <div class="form-group">
+    <label for="volunteerSearch">Search Volunteer</label>
+    <input 
+      type="text" 
+      id="volunteerSearch"
+      placeholder="Search by name or email..."
+      [(ngModel)]="searchVolunteerTerm"
+      (click)="showVolunteerDropdown()"
+      (focus)="showVolunteerDropdown()"
+      autocomplete="off"
+      >
+    
+    <!-- Volunteer Dropdown -->
+    <!-- Volunteer Dropdown -->
+<div class="user-dropdown" *ngIf="displayVolunteerDropdown" 
+(clickOutside)="hideVolunteerDropdown()" >
+
+  <div 
+    *ngFor="let user of filterVolunteers()" 
+    class="user-option"
+    (click)="selectVolunteer(user)"
+>
+
+    <div class="user-option-avatar">
+      {{ user.name.charAt(0).toUpperCase() }}
+    </div>
+
+    <div class="user-option-info">
+      <div class="user-option-name">{{ user.name }}</div>
+      <div class="user-option-email">{{ user.email }}</div>
+    </div>
+  </div>
+
+  <div *ngIf="filterVolunteers().length === 0"
+       class="user-option no-results">
+    No users found
+  </div>
+
+</div>
+
+
+
+    
+  </div>
+</div>
+
+    <div class="additional-notes-section">
+      <h3>Additional Notes</h3>
+      <p>Any special instructions or information about your waste</p>
+      <textarea [(ngModel)]="pickupRequest.additionalNotes" 
+                placeholder="Please provide any additional details that might help our pickup team."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-primary" (click)="schedulePickup()" [disabled]="isLoading">
+        {{isLoading ? 'Scheduling...' : 'Schedule Pickup'}}
+      </button>
+    </div>
+  </div>
+</div>
+
           <!-- Volunteer Assignment Section -->
           <!-- <div class="additional-notes-section">
 
@@ -420,7 +492,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>Date</th>
+                  <th>Pickup Date</th>
                   <th>Address</th>
                   <th>Items</th>
                   <th>Status</th>

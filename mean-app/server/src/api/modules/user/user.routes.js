@@ -11,7 +11,10 @@ router.post("/auth/login", userController.login);
 // -------- PROFILE --------
 router.get("/profile", auth, userController.getProfile);
 router.put("/profile", auth, userController.updateProfile);
+
 router.delete("/profile", auth, userController.deleteProfile);
 // Password update
 router.put('/profile/password', auth, userController.updatePassword);
+router.get("/volunteers", auth, userController.getVolunteers);
+
 export default router;
