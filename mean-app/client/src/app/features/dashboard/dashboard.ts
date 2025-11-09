@@ -143,6 +143,9 @@ export class Dashboard implements OnInit {
   selectedOpportunityId: string | null = null;
   isDarkMode: boolean = false;
         userRole: string = '';
+  // Add these properties for mobile hamburger/sidebar
+  isMobile: boolean = false;
+  sidebarOpen: boolean = false;
 
   
   // Loading & Messages
@@ -301,18 +304,22 @@ export class Dashboard implements OnInit {
       return;
     }
     
-    // Load saved theme preference
-    const savedTheme = localStorage.getItem('darkMode');
-    if (savedTheme === 'true') {
+    // Load saved theme preference (use 'theme' key)
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
       document.body.classList.add('dark');
       this.isDarkMode = true;
-      console.log('Dark mode loaded from localStorage');
+      console.log('Dark mode loaded from localStorage (theme=dark)');
     } else {
       this.isDarkMode = false;
+      document.body.classList.remove('dark');
     }
-    
+
     this.getUserProfile();
     this.loadDashboardData();
+    // Check if mobile and listen for resize changes
+    this.checkIfMobile();
+    window.addEventListener('resize', () => this.checkIfMobile());
   }
 
   // ==================== AUTHENTICATION & PROFILE ====================
@@ -520,12 +527,32 @@ export class Dashboard implements OnInit {
   }
 
   toggleTheme() {
-    document.body.classList.toggle('dark');
-    this.isDarkMode = document.body.classList.contains('dark');
-    console.log('Theme toggled. Dark mode is now:', this.isDarkMode);
-    console.log('Body classes:', document.body.className);
-    // Save preference to localStorage
-    localStorage.setItem('darkMode', this.isDarkMode ? 'true' : 'false');
+    this.isDarkMode = !this.isDarkMode;
+    if (this.isDarkMode) {
+      document.body.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }
+
+  // Toggle sidebar (hamburger)
+  toggleSidebar() {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  // Mobile view helper used by template
+  isMobileView(): boolean {
+    return window.innerWidth <= 768;
+  }
+
+  // Detect mobile viewport
+  checkIfMobile() {
+    this.isMobile = window.innerWidth <= 768;
+    if (!this.isMobile) {
+      this.sidebarOpen = false;
+    }
   }
 
   scrollTo(elementId: string) {
